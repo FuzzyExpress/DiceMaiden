@@ -5,3 +5,5 @@ dice_rolls.log*
 .env
 Gemfile.lock
 DiceRolls/Cache/*
+DiceRolls.zip
+DiceRolls/DiceRolls.zip
