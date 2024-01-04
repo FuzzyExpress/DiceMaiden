@@ -1,34 +1,3 @@
-
-def run_python_script(int1, int2)
-  # Convert Ruby list to a string for passing as a command-line argument
-  input_list_str = $dice_files.join(',')
-  $dice_files = []
-
-  # Run the Python script asynchronously
- # command = "python3 /home/evans/Documents/Discord/DiceMaiden/diceImageMaker.py #{input_list_str} #{int1} #{int2}"
- 
- # io = IO.popen(command)
-
-  Thread.new do
-    command = "python3 /home/evans/Documents/Discord/DiceMaiden/diceImageMaker.py #{input_list_str} #{int1} #{int2}"
-
-    puts "\n"
-    
-    print(input_list_str)
-    
-    puts "\n"
-
-    puts "\n"
-
-    print(command.gsub(", ", "~"))
-
-    puts "\n"
-
-    io = IO.popen(command.gsub(", ", "~"))
-    io.close
-  end
-end
-
 # All bot logic that is not handled by Dice-Bag lives here
 
 # Returns an input string after it's been put through the aliases
@@ -280,11 +249,6 @@ def process_roll_token(_event, token)
   # Parse the roll and grab the total tally
   parse_roll = dice_roll.tree
   parsed = parse_roll.inspect
-  #print(dice_roll)
- # print(parse_roll)
-  print(parsed)
-
-  
   roll_tally = parsed.scan(/tally=\[.*?, @/)
   roll_tally = String(roll_tally)
   roll_tally.gsub!(/\[*("tally=)|"\]|"|, @/, '')
@@ -297,11 +261,6 @@ def process_roll_token(_event, token)
     roll_tally = String(roll_tally)
   end
   @tally += roll_tally
-  
-  $dice_files.append("/home/evans/Documents/Discord/DiceMaiden/DiceRolls/d#{parse_roll[0][1].value[:sides]}/#{@tally[1..-2]}.png")
-  
-#  image_path = "/home/evans/Documents/Discord/DiceMaiden/DiceRolls/d#{parse_roll[0][1].value[:sides]}/#{@tally[1..-2]}.png"
-#  _event.channel.send_file(File.open(image_path, 'r'))
 
   token_total
 end

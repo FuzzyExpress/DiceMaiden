@@ -32,16 +32,27 @@ else
   $db.busy_timeout = (10_000)
 end
 
+def print(obj)
+  puts obj.inspect
+end
+
 mutex = Mutex.new
 
 if @shard == 0
   puts "Shard #{@shard} is registering commands"
-  @bot.register_application_command(:roll, 'Ask Dice Maiden to roll some dice!') do |cmd|
-    cmd.string('message', 'roll syntax sent to Dice Maiden. Type help or visit github to view possible commands', required: true)
+
+  """
+  @bot.register_application_command(:roll, 'Ask Express Server to roll some dice!') do |cmd|
+    cmd.string('message', 'roll syntax sent to Express Server. Type help or visit Dice Maiden github to view possible commands', required: true)
   end
 
-  @bot.register_application_command(:r, 'Ask Dice Maiden to roll some dice!') do |cmd|
-    cmd.string('message', 'roll syntax sent to Dice Maiden. Type help or visit github to view possible commands', required: true)
+  @bot.register_application_command(:r, 'Ask Express Server to roll some dice!') do |cmd|
+    cmd.string('message', 'roll syntax sent to Express Server. Type help or visit Dice Maiden github to view possible commands', required: true)
+  end
+  """
+
+  @bot.register_application_command(:feroll, 'Ask Express Server to roll some dice!') do |cmd|
+    cmd.string('message', 'roll syntax sent to Express Server. Type help or visit Dice Maiden github to view possible commands', required: true)
   end
 
   # log the command id for the above commands
@@ -49,6 +60,8 @@ if @shard == 0
     puts id
   end
 end
+
+$dice_files = []
 
 inc_cmd = lambda do |event|
   # Locking the thread to prevent messages going to the wrong server
@@ -126,6 +139,16 @@ inc_cmd = lambda do |event|
           else
             @error_check_roll_set << "#{@dice_result}\n"
             @roll_set_results << "`#{@tally}` #{@dice_result}\n"
+
+          #  print(@tally)
+          #  print(@value)
+
+          #  image_path = "/home/evans/Documents/Discord/DiceMaiden/DiceRolls/#{@roll.strip}/#{@tally[1..-2]}.png"
+          
+          #  print($dice_files)
+          #  event.channel.send_file($dice_files.map { |path| File.open(path, 'r') })
+          #  $dice_files = []
+
           end
           roll_count += 1
         end
@@ -133,7 +156,18 @@ inc_cmd = lambda do |event|
 
         log_roll(event) if @launch_option == 'debug'
         if @comment.to_s.empty? || @comment.to_s.nil?
-          event.respond(content: "#{@user} Request: `[#{@roll_request.strip}]` Rolls:\n#{@roll_set_results}")
+          
+          
+#          event << ($dice_files.map { |path| File.open(path, 'r') })
+
+          event.respond(content: "#{@user} Request: `[#{@roll_request}]` Rolls:\n#{@roll_set_results}") # .strip
+          
+          print($dice_files)
+        #  event.channel.send_file($dice_files.map { |path| File.open(path, 'r') })
+        #  $dice_files.each { |path| event.channel.send_file(File.open(path, 'r')) }
+        
+          run_python_script( event.server.id, event.channel.id )
+
         else
           event.respond(content: "#{@user} Rolls:\n#{@roll_set_results} Reason: `#{@comment}`")
         end
@@ -151,7 +185,23 @@ inc_cmd = lambda do |event|
       if check_wrath == true
         respond_wrath(event, dnum)
       else
+
+      #  embed = Discordrb::Webhooks::Embed.new
+      #  embed.title = "#{@user} Request: `[#{@roll_request.strip}]` Rolls"
+      #  embed.description = @roll_set_results
+
+        # Add an image to the embed (replace 'IMAGE_URL' with the actual URL of your image)
+      #  embed.image = Discordrb::Webhooks::EmbedImage.new(url: '/home/evans/Documents/Discord/DiceMaiden/DiceRolls/d6/2.png' )
+      #  embed.image = Discordrb::Webhooks::EmbedImage.new(url: '/home/evans/Documents/Discord/DiceMaiden/DiceRolls/' + )
+        
+      #image_path = "/home/evans/Documents/Discord/DiceMaiden/DiceRolls/#{@roll_request.strip}/#{@tally[1..-2]}.png"
+
+
+        
         event.respond(content: build_response)
+      #  event.channel.send_file(File.open(image_path, 'r'))
+        run_python_script( event.server.id, event.channel.id )
+
         check_fury(event)
       end
     end
@@ -165,8 +215,10 @@ inc_cmd = lambda do |event|
     if (e.message.include? 'Message over the character limit') || (e.message.include? 'Invalid Form Body')
       if @roll_set.nil?
         event.respond(content: "#{@user} Roll #{@dice_result} Reason: `Simplified roll due to character limit`")
+        run_python_script( event.server.id, event.channel.id )
       else
         event.respond(content: "#{@user} Rolls:\n#{@error_check_roll_set}Reason: `Simplified roll due to character limit`")
+        run_python_script( event.server.id, event.channel.id )
       end
     elsif (e.message.include? "undefined method `join' for nil:NilClass") || (e.message.include? "The bot doesn't have the required permission to do this!") || (e.message.include? '500: Internal Server Error') || (e.message.include? '500 Internal Server Error')
       time = Time.now.getutc
@@ -178,8 +230,9 @@ inc_cmd = lambda do |event|
   mutex.unlock
 end
 
-@bot.application_command(:roll, &inc_cmd)
-@bot.application_command(:r, &inc_cmd)
+ # @bot.application_command(:roll, &inc_cmd)
+ # @bot.application_command(:r, &inc_cmd)d
+@bot.application_command(:feroll, &inc_cmd)
 
 if @launch_option == 'lite'
   @bot.run
