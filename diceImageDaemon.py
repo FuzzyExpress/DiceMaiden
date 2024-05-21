@@ -33,6 +33,10 @@ async def handle_client(reader, writer):
     print("".join(message))
 
     file_path, int1, int2 = message.split(',')
+
+    if not os.path.exists(file_path):
+        file_path = '/home/evans/Documents/Discord/DiceMaiden/DiceRolls/Error.png'
+
     print("got")
     for guild in client.guilds:
         if guild.id == int(int1):

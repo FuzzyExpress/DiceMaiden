@@ -72,8 +72,12 @@ def combine_images_into_grid(image_paths, output_path):
     grid = Image.new('RGBA', (grid_width, grid_height), (255, 255, 255, 0))
 
     # Paste each image onto the grid
-    for i, new_list in enumerate(new_list): # image_paths
-        img = Image.open("/home/evans/Documents/Discord/DiceMaiden/DiceRolls/d" + new_list + ".png")
+    for i, new_list in enumerate(new_list): # image_paths\
+        try:
+            img = Image.open("/home/evans/Documents/Discord/DiceMaiden/DiceRolls/d" + new_list + ".png")
+        except FileNotFoundError:
+            img = Image.open('/home/evans/Documents/Discord/DiceMaiden/DiceRolls/DiceFindError.png')
+
         grid.paste(img, ((i % num_columns) * 200, (i // num_columns) * 200))
 
     # Save the combined image to the specified output path
